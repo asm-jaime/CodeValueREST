@@ -5,11 +5,11 @@ namespace CodeValueREST.Features.CodeValues.Queries;
 
 public class GetCodeValuesQuery : IRequest<List<CodeValue>>
 {
-    public CodeValueFilter? CodeFilter { get; }
+    public CodeValueFilter? Filter { get; }
 
     public GetCodeValuesQuery(CodeValueFilter? filter)
     {
-        CodeFilter = filter;
+        Filter = filter;
     }
 }
 

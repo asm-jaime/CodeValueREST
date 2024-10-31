@@ -1,3 +1,5 @@
+using CodeValueREST.Features.CodeValues.Handlers;
+using CodeValueREST.Features.CodeValues.Providers;
 using Npgsql;
 using System.Data;
 
@@ -8,6 +10,12 @@ builder.Services.AddScoped<IDbConnection>(sp =>
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     return new NpgsqlConnection(connectionString);
 });
+
+builder.Services.AddTransient<CodeValueProvider>();
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(GetCodeValuesQueryHandler).Assembly)
+);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
