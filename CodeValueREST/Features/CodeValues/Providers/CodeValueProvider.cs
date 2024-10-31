@@ -1,7 +1,7 @@
 ﻿using CodeValueREST.Features.CodeValues.Models;
 using Dapper;
+using DataAccess;
 using DataAccess.Postgres;
-using GpnDs.ISDR.DataAccess;
 using System.Data;
 
 namespace CodeValueREST.Features.CodeValues.Providers;

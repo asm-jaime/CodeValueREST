@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GpnDs.ISDR.DataAccess;
+namespace DataAccess;
 
 public class ColumnToPropertyMapping
 {

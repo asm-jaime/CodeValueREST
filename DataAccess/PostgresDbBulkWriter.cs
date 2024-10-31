@@ -1,5 +1,4 @@
 ﻿using FastMember;
-using GpnDs.ISDR.DataAccess;
 using NpgsqlTypes;
 using System;
 using System.Collections.Generic;

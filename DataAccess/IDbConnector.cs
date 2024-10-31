@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Threading.Tasks;
 
-namespace GpnDs.ISDR.DataAccess;
+namespace DataAccess;
 
 public interface IDbConnector
 {

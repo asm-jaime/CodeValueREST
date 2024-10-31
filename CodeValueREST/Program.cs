@@ -30,11 +30,9 @@ if(app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Register the middlewares
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<ResponseLoggingMiddleware>();
 
-// Map controllers
 app.MapControllers();
 
 app.Run();

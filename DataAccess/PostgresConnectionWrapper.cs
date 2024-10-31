@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Data;
 using System.Threading.Tasks;
-using Npgsql;
 
 namespace DataAccess.Postgres;
 
@@ -12,7 +12,7 @@ public class PostgresConnectionWrapper : IDbConnection
 
     public PostgresConnectionWrapper(string connectionString, bool removeFromPoolOnDispose)
     {
-        if (string.IsNullOrEmpty(connectionString))
+        if(string.IsNullOrEmpty(connectionString))
         {
             throw new ArgumentNullException("connectionString");
         }
@@ -71,14 +71,14 @@ public class PostgresConnectionWrapper : IDbConnection
     {
         try
         {
-            if (il == IsolationLevel.Unspecified)
+            if(il == IsolationLevel.Unspecified)
             {
                 return _implementation.BeginTransaction();
             }
 
             return _implementation.BeginTransaction(il);
         }
-        catch (InvalidOperationException)
+        catch(InvalidOperationException)
         {
             // if nested transaction
             return new PostgresSavepointWrapper(_implementation);
@@ -114,7 +114,7 @@ public class PostgresConnectionWrapper : IDbConnection
     {
         _implementation.Dispose();
 
-        if (_removeFromPoolOnDispose)
+        if(_removeFromPoolOnDispose)
         {
             NpgsqlConnection.ClearPool(_implementation);
         }
