@@ -1,0 +1,6 @@
+@CodeValueREST_HostAddress = http://localhost:5150
+
+GET {{CodeValueREST_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
