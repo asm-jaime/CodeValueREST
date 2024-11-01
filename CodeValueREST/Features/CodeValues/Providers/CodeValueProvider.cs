@@ -6,9 +6,9 @@ using System.Data;
 
 namespace CodeValueREST.Features.CodeValues.Providers;
 
-public class CodeValueProvider
+public class CodeValueProvider(IDbConnector connector)
 {
-    private readonly IDbConnector _connector;
+    private readonly IDbConnector _connector = connector ?? throw new ArgumentNullException(nameof(connector));
 
     #region SQL Statements
 
@@ -55,11 +55,6 @@ public class CodeValueProvider
             WHERE 1=1 {condition}";
 
     #endregion
-
-    public CodeValueProvider(IDbConnector connector)
-    {
-        _connector = connector ?? throw new ArgumentNullException(nameof(connector));
-    }
 
     public async Task<IList<CodeValue>> ListAsync(CodeValueFilter filter)
     {
