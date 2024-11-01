@@ -1,14 +1,15 @@
 using CodeValueREST.Features.CodeValues.Handlers;
 using CodeValueREST.Features.CodeValues.Providers;
-using Npgsql;
-using System.Data;
+using CodeValueREST.Features.LoggingMiddleware;
+using DataAccess;
+using DataAccess.Postgres;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<IDbConnection>(sp =>
+builder.Services.AddScoped<IDbConnector>(provider =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    return new NpgsqlConnection(connectionString);
+    return new PostgresDbConnector(connectionString);
 });
 
 builder.Services.AddTransient<CodeValueProvider>();
@@ -20,7 +21,6 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
 

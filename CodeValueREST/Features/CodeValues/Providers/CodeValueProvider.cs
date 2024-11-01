@@ -19,15 +19,15 @@ public class CodeValueProvider
                 tag VARCHAR(2000)
             ) ON COMMIT PRESERVE ROWS";
 
-    private readonly string _insertIdsInTemp = @"INSERT INTO reader_query_params(num_col, tag) VALUES(:p, 'serial_number')";
+    private readonly string _insertIdsInTemp = @"INSERT INTO reader_query_params(num_col, tag) VALUES(:p, 'id')";
     private readonly string _insertCodesInTemp = @"INSERT INTO reader_query_params(num_col, tag) VALUES(:p, 'code')";
     private readonly string _insertValuesInTemp = @"INSERT INTO reader_query_params(str_col, tag) VALUES(:p, 'value')";
 
     private readonly string _withIds = @"
-            serialNumbers AS (
+            ids AS (
                 SELECT num_col
                 FROM reader_query_params
-                WHERE tag = 'serial_number'
+                WHERE tag = 'id'
             )";
 
     private readonly string _withCodes = @"
@@ -47,7 +47,7 @@ public class CodeValueProvider
     private readonly string _baseQuery = @"
             {withs}
             SELECT
-                code_value.serial_number AS SerialNumber,
+                code_value.id AS Id,
                 code_value.code AS Code,
                 code_value.value AS Value
             FROM code_value
@@ -120,7 +120,7 @@ public class CodeValueProvider
         if(filter.Ids != null && filter.Ids.Any())
         {
             withs.Add(_withIds);
-            joins.Add("INNER JOIN serialNumbers ON code_value.serial_number = serialNumbers.num_col");
+            joins.Add("INNER JOIN ids ON code_value.id = ids.num_col");
         }
 
         if(filter.Codes != null && filter.Codes.Any())

@@ -2,7 +2,7 @@
 
 public class CodeValue
 {
-    public int SerialNumber { get; set; }
+    public int Id { get; set; }
     public int Code { get; set; }
     public string Value { get; set; }
 }

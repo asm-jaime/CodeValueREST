@@ -1,18 +1,21 @@
 ﻿using Dapper;
-using System.Data;
+using DataAccess;
 using System.Text;
 
-public class RequestLoggingMiddleware
-{
-    private readonly RequestDelegate _next;
+namespace CodeValueREST.Features.LoggingMiddleware;
 
-    public RequestLoggingMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+public class RequestLoggingMiddleware(RequestDelegate next, IServiceProvider serviceProvider)
+{
+    private readonly RequestDelegate _next = next;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var scope = _serviceProvider.CreateScope();
+        context.Items["RequestScope"] = scope;
+
+        var connector = scope.ServiceProvider.GetService<IDbConnector>() ?? throw new ApplicationException($"can not get connector in {typeof(RequestLoggingMiddleware)}");
+
         var id = Guid.NewGuid();
         context.Items["RequestLogId"] = id;
 
@@ -26,25 +29,21 @@ public class RequestLoggingMiddleware
         request.Body.Position = 0;
         var requestSize = Encoding.UTF8.GetByteCount(requestBody);
 
-        using(var scope = context.RequestServices.CreateScope())
-        {
-            var connection = scope.ServiceProvider.GetRequiredService<IDbConnection>();
+        using var connection = connector.Connect();
 
-            var sql = @"
-            INSERT INTO request_log (id, timestamp, request_url, request_size, response_code, response_size)
-            VALUES (@Id, @Timestamp, @RequestUrl, @RequestSize, 0, 0)
+        var sql = @"
+            INSERT INTO request_log (id, request_time, response_time, request_url, response_code, request_size, response_size)
+            VALUES (@Id, @RequestTime, null, @RequestUrl, 0,  @RequestSize, 0)
         ";
 
-            await connection.ExecuteAsync(sql, new
-            {
-                Id = id,
-                RequestTime = timestamp,
-                RequestUrl = requestUrl,
-                RequestSize = requestSize
-            });
-        }
+        await connection.ExecuteAsync(sql, new
+        {
+            Id = id,
+            RequestTime = timestamp,
+            RequestUrl = requestUrl,
+            RequestSize = requestSize
+        });
 
-        // Call the next middleware in the pipeline
         await _next(context);
     }
 }
