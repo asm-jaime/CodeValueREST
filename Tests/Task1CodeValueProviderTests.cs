@@ -55,7 +55,7 @@ class Task1CodeValueProviderTests
     public async Task CodeValueProvider_CanPutRange_Test()
     {
         //Arrange
-        var codeValues = new List<CodeValue>() { new() { Code = 0, Value = "value0" } };
+        var codeValues = new List<CodeValue>() { new() { Code = 0, Value = "value1" } };
 
         //Act
         var result = await _codeValueProvider.PutRange(codeValues);

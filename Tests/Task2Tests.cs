@@ -14,7 +14,7 @@ record NameNumber(string ClientName, long ContactsNumber);
 record Client(int Id, string ClientName);
 
 [TestFixture]
-public class DatabaseTests
+public class Task2Tests
 {
     private PostgreSqlContainer _postgresContainer;
     private string _connectionString;
@@ -32,9 +32,8 @@ public class DatabaseTests
 
         _connectionString = _postgresContainer.GetConnectionString();
 
-        using(IDbConnection db = new NpgsqlConnection(_connectionString))
-        {
-            var createTablesQuery = @"
+        using IDbConnection db = new NpgsqlConnection(_connectionString);
+        var createTablesQuery = @"
 create table if not exists client (
   id serial primary key,
   client_name varchar(200) NOT NULL
@@ -47,7 +46,7 @@ create table if not exists client_contact (
   contact_value varchar(255) not null
 );
 ";
-            var insertDataToTablesQuery = @"
+        var insertDataToTablesQuery = @"
 insert into client(client_name)
 values
     ('bob'),
@@ -61,9 +60,8 @@ values
     (1, 'fff', 'some'),
     (2, 'third', 'some3');
 ";
-            await db.ExecuteAsync(createTablesQuery);
-            await db.ExecuteAsync(insertDataToTablesQuery);
-        }
+        await db.ExecuteAsync(createTablesQuery);
+        await db.ExecuteAsync(insertDataToTablesQuery);
     }
 
     [OneTimeTearDown]
