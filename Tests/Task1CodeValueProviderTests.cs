@@ -14,7 +14,7 @@ namespace Tests;
 
 [TestFixture]
 [Category("DataAccess")]
-class SolutionTests
+class Task1CodeValueProviderTests
 {
 
     private static CodeValueProvider _codeValueProvider;
@@ -55,7 +55,6 @@ class SolutionTests
     public async Task CodeValueProvider_CanPutRange_Test()
     {
         //Arrange
-
         var codeValues = new List<CodeValue>() { new() { Code = 0, Value = "value0" } };
 
         //Act
