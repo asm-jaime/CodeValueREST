@@ -12,16 +12,20 @@ public class CodeValueProvider(IDbConnector connector)
 
     #region SQL Statements
 
-    private readonly string _createReaderQueryParams = @"
-            CREATE TEMPORARY TABLE IF NOT EXISTS reader_query_params (
-                num_col BIGINT,
-                str_col VARCHAR(2000),
-                tag VARCHAR(2000)
-            ) ON COMMIT PRESERVE ROWS";
+    private readonly string _createReaderQueryParams =
+@"create temporary table if not exists reader_query_params
+(
+  num_col  integer,
+  guid_col uuid,
+  str_col  varchar(2000),
+  dt_col   timestamp,
+  tag      varchar(2000)
+)
+on commit preserve rows";
 
-    private readonly string _insertIdsInTemp = @"INSERT INTO reader_query_params(num_col, tag) VALUES(:p, 'id')";
-    private readonly string _insertCodesInTemp = @"INSERT INTO reader_query_params(num_col, tag) VALUES(:p, 'code')";
-    private readonly string _insertValuesInTemp = @"INSERT INTO reader_query_params(str_col, tag) VALUES(:p, 'value')";
+    private readonly string _insertIdsInTemp = @"insert into reader_query_params(num_col, tag) values(:p, 'id')";
+    private readonly string _insertCodesInTemp = @"insert into reader_query_params(num_col, tag) values(:p, 'code')";
+    private readonly string _insertValuesInTemp = @"insert into reader_query_params(str_col, tag) values(:p, 'value')";
 
     private readonly string _withIds = @"
             ids AS (
@@ -81,59 +85,44 @@ public class CodeValueProvider(IDbConnector connector)
             return (string.Empty, new DynamicParameters());
         }
 
-        if(
-            filter.Ids != null ||
-            filter.Codes != null ||
-            filter.Values != null
-        )
+        if(filter.Ids != null || filter.Codes != null || filter.Values != null)
         {
             connection.Execute(_createReaderQueryParams);
-            connection.Execute("DELETE FROM reader_query_params");
+            connection.Execute("delete from reader_query_params");
 
-            var bulkWriter = new PostgresDbBulkWriter();
-
-            if(filter.Ids != null && filter.Ids.Any())
-            {
-                bulkWriter.Write(connection, _insertIdsInTemp, filter.Ids.Select(i => new { p = i }).Distinct().ToList());
-            }
-
-            if(filter.Codes != null && filter.Codes.Any())
-            {
-                bulkWriter.Write(connection, _insertCodesInTemp, filter.Codes.Select(i => new { p = i }).Distinct().ToList());
-            }
-
-            if(filter.Values != null && filter.Values.Any())
-            {
-                bulkWriter.Write(connection, _insertValuesInTemp, filter.Values.Select(i => new { p = i }).Distinct().ToList());
-            }
+            new PostgresDbBulkWriter()
+                .Write(connection, _insertIdsInTemp, (filter.Ids ?? Enumerable.Empty<int>()).Select(i => new { p = i }).Distinct().ToList())
+                .Write(connection, _insertCodesInTemp, (filter.Codes ?? Enumerable.Empty<int>()).Select(i => new { p = i }).Distinct().ToList())
+                .Write(connection, _insertValuesInTemp, (filter.Values ?? Enumerable.Empty<string>()).Select(i => new { p = i }).Distinct().ToList());
         }
 
-        var withs = new List<string>();
-        var joins = new List<string>();
+        var withs = string.Empty;
+        var joins = string.Empty;
+        var condition = string.Empty;
         var parameters = new DynamicParameters();
 
         if(filter.Ids != null && filter.Ids.Any())
         {
-            withs.Add(_withIds);
-            joins.Add("INNER JOIN ids ON code_value.id = ids.num_col");
+            withs += string.IsNullOrEmpty(withs) ? _withIds : ", " + _withIds;
+            joins += "inner join ids on code_value.id = ids.num_col ";
         }
 
         if(filter.Codes != null && filter.Codes.Any())
         {
-            withs.Add(_withCodes);
-            joins.Add("INNER JOIN codes ON code_value.code = codes.num_col");
+            withs += string.IsNullOrEmpty(withs) ? _withCodes : ", " + _withCodes;
+            joins += "inner join codes on code_value.code = codes.num_col ";
         }
 
         if(filter.Values != null && filter.Values.Any())
         {
-            withs.Add(_withValues);
-            joins.Add("INNER JOIN values ON code_value.value = values.str_col");
+            withs += string.IsNullOrEmpty(withs) ? _withValues : ", " + _withValues;
+            joins += "inner join values on code_value.value = values.str_col ";
         }
 
         string query = _baseQuery
-            .Replace("{withs}", withs.Any() ? "WITH " + string.Join(", ", withs) : string.Empty)
-            .Replace("{joins}", string.Join(" ", joins))
-            .Replace("{condition}", string.Empty);
+            .Replace("{withs}", string.IsNullOrEmpty(withs) ? withs : "with " + withs)
+            .Replace("{joins}", joins)
+            .Replace("{condition}", condition);
 
         return (query, parameters);
     }
