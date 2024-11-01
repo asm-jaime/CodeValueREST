@@ -48,6 +48,8 @@ on commit preserve rows";
                 WHERE tag = 'value'
             )";
 
+    private readonly string _truncateTable = @"truncate table code_value restart identity";
+
     private readonly string _baseQuery = @"
             {withs}
             SELECT
@@ -58,21 +60,17 @@ on commit preserve rows";
             {joins}
             WHERE 1=1 {condition}";
 
+    private readonly string _addQuery = @"
+    code_value
+        (code,
+        value)
+";
+
+    private readonly string _addQueryValues = @"
+        (:Code,
+        :Value)";
+
     #endregion
-
-    public async Task<IList<CodeValue>> ListAsync(CodeValueFilter filter)
-    {
-        using var connection = _connector.Connect();
-        var (query, parameters) = GetQueryParams(filter, connection);
-
-        if(string.IsNullOrWhiteSpace(query))
-        {
-            return [];
-        }
-
-        var result = (await connection.QueryAsync<CodeValue>(query, parameters)).ToList();
-        return result;
-    }
 
     private (string, DynamicParameters) GetQueryParams(CodeValueFilter filter, IDbConnection connection)
     {
@@ -126,4 +124,43 @@ on commit preserve rows";
 
         return (query, parameters);
     }
+
+    public async Task<IList<CodeValue>> ListAsync(CodeValueFilter filter)
+    {
+        using var connection = _connector.Connect();
+        var (query, parameters) = GetQueryParams(filter, connection);
+
+        if(string.IsNullOrWhiteSpace(query))
+        {
+            return [];
+        }
+
+        var result = (await connection.QueryAsync<CodeValue>(query, parameters)).ToList();
+        return result;
+    }
+
+    public async Task<IList<CodeValue>> PutRange(IList<CodeValue> codeValues)
+    {
+        if(codeValues == null)
+        {
+            return [];
+        }
+
+        using var connection = _connector.Connect();
+
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+        await connection.ExecuteAsync(_truncateTable);
+
+        var bulkWriter = new PostgresDbBulkWriter();
+        bulkWriter.CopyInsert((PostgresConnectionWrapper)connection, _addQuery, _addQueryValues, codeValues);
+
+
+        transaction.Commit();
+
+        var result = await ListAsync(new CodeValueFilter());
+
+        return result;
+    }
+
 }

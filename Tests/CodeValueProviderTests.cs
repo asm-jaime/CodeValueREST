@@ -1,9 +1,11 @@
 using CodeValueREST.Features.CodeValues;
+using CodeValueREST.Features.CodeValues.Models;
 using CodeValueREST.Features.CodeValues.Providers;
 using DataAccess.Postgres;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -44,6 +46,20 @@ class SolutionTests
 
         //Act
         var result = await _codeValueProvider.ListAsync(new CodeValueFilter { Values = ["value1"] });
+
+        //Assert
+        result.Count.Should().Be(1);
+    }
+
+    [Test]
+    public async Task CodeValueProvider_CanPutRange_Test()
+    {
+        //Arrange
+
+        var codeValues = new List<CodeValue>() { new() { Code = 0, Value = "value0" } };
+
+        //Act
+        var result = await _codeValueProvider.PutRange(codeValues);
 
         //Assert
         result.Count.Should().Be(1);
