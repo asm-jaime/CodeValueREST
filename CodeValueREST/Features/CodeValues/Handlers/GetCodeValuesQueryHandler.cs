@@ -11,7 +11,6 @@ public class GetCodeValuesQueryHandler(CodeValueProvider provider) : IRequestHan
 
     public async Task<List<CodeValue>> Handle(GetCodeValuesQuery request, CancellationToken cancellationToken)
     {
-        var result = await _provider.ListAsync(request.Filter ?? new CodeValueFilter());
-        return result.ToList();
+        return await _provider.ListAsync(request.Filter ?? new CodeValueFilter());
     }
 }

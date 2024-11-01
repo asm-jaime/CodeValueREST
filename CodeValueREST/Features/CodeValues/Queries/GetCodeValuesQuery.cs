@@ -3,13 +3,8 @@ using MediatR;
 
 namespace CodeValueREST.Features.CodeValues.Queries;
 
-public class GetCodeValuesQuery : IRequest<List<CodeValue>>
+public class GetCodeValuesQuery(CodeValueFilter? filter) : IRequest<List<CodeValue>>
 {
-    public CodeValueFilter? Filter { get; }
-
-    public GetCodeValuesQuery(CodeValueFilter? filter)
-    {
-        Filter = filter;
-    }
+    public CodeValueFilter? Filter { get; } = filter;
 }
 

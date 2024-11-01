@@ -125,7 +125,7 @@ on commit preserve rows";
         return (query, parameters);
     }
 
-    public async Task<IList<CodeValue>> ListAsync(CodeValueFilter filter)
+    public async Task<List<CodeValue>> ListAsync(CodeValueFilter filter)
     {
         using var connection = _connector.Connect();
         var (query, parameters) = GetQueryParams(filter, connection);
@@ -139,7 +139,7 @@ on commit preserve rows";
         return result;
     }
 
-    public async Task<IList<CodeValue>> PutRange(IList<CodeValue> codeValues)
+    public async Task<List<CodeValue>> PutRange(List<CodeValue> codeValues)
     {
         if(codeValues == null)
         {

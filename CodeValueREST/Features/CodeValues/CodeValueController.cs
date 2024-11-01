@@ -22,9 +22,9 @@ public class CodeValuesController(IMediator mediator) : ControllerBase
             .SelectMany(dict => dict.Select(kvp => new CodeValue { Code = int.Parse(kvp.Key), Value = kvp.Value }))
             .ToList();
 
-        await _mediator.Send(new SaveCodeValuesCommand(codeValues));
+        var result = await _mediator.Send(new PutCodeValuesCommand(codeValues));
 
-        return Ok("Data saved successfully.");
+        return Ok(result);
     }
 
     [HttpGet]
